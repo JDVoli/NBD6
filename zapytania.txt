@@ -1,0 +1,43 @@
+1. MATCH(t:town{name:"Darjeeling"}), (p:peak{name:"Sandakphu"}) WITH t,p MATCH path=allShortestPaths((t)-[*]-(p)) RETURN path
+2. MATCH(t:town{name:"Darjeeling"}), (p:peak{name:"Sandakphu"}) WITH t,p MATCH path=allShortestPaths((t)-[*]-(p)) WHERE ALL (r in RELATIONSHIPS(path) WHERE r.winter="true") RETURN path
+3. MATCH route = (Darjeeling:town {name:'Darjeeling'})-[*]->(Sandakphu:peak {name:'Sandakphu'}) RETURN DISTINCT route, reduce(counter = 0, i IN RELATIONSHIPS(route) | counter + i.distance) AS distance ORDER BY distance ASC
+   MATCH route = (Darjeeling:town {name:'Darjeeling'})-[:twowheeler *]->(dest) WHERE ALL (r IN RELATIONSHIPS(route) WHERE r.summer = "true") RETURN DISTINCT dest
+
+
+Zadania 5-10 z części "Połączenia lotnicze" zostały zrealizowane z wykorzystaniem dodatkowej relacji dla lotniska: Lotnisko-Połączenie. 
+Połączenie przechowuje informacje dot. ceny oraz klasy biletu oraz daty wylotu.
+
+MATCH (start:Airport)<-[:ORIGIN]-(flight:Flight)-[:DESTINATION]->(destination:Airport)
+MATCH (ticket:Ticket)-[:ASSIGN]->(flight)
+WITH start, flight, destination, ticket
+MERGE (start)-[connection:CONNECTION {date: flight.date, price: ticket.price, class: ticket.class}]->(destination)
+RETURN connection
+
+4.  MATCH (airport)<-[:ORIGIN]-(:Flight) RETURN airport,COUNT(*) AS flights ORDER BY flights DESC
+5.  MATCH path = ((lax :Airport{name: "LAX"})-[connection :CONNECTION*..3]->(destination :Airport))
+    WITH lax, [node IN NODES(path) | node.name] AS finalPath, LENGTH(path) AS length, destination, REDUCE(finalPrice = 0, c IN connection | finalPrice + c.price) AS finalPrice
+    WHERE finalPrice < 3000
+    RETURN DISTINCT destination
+6.  MATCH path = ((lax :Airport{name: "LAX"})-[connection :CONNECTION*..3]->(destination :Airport{name: "DAY"}))
+	WITH lax, [node IN NODES(path)| node.name] as finalPath, LENGTH(path) as length, destination, REDUCE(finalPrice = 0, c IN connection | finalPrice + c.price) AS finalPrice
+	RETURN lax, finalPath, destination, finalPrice
+	ORDER BY finalPrice
+7.	MATCH path = ((lax :Airport{name: "LAX"})-[connection :CONNECTION*..3]->(destination :Airport{name: "DAY"}))
+	WITH lax, [node IN NODES(path)| node.name] as finalPath, LENGTH(path) as length, destination, REDUCE(finalPrice = 0, c IN connection | finalPrice + c.price) AS finalPrice
+	RETURN lax, finalPath, destination, finalPrice
+	ORDER BY finalPrice
+	LIMIT 1
+8.  MATCH path = ((lax :Airport{name: "LAX"})-[connection :CONNECTION*..3{class: "business"}]->(destination :Airport{name: "DAY"}))
+	WITH lax, [node IN NODES(path)| node.name] as finalPath, LENGTH(path) as length, destination, REDUCE(finalPrice = 0, c IN connection | finalPrice + c.price) AS finalPrice
+	RETURN lax, finalPath, destination, finalPrice
+	ORDER BY finalPrice
+	LIMIT 1
+9.  MATCH (airport:Airport)-[:DESTINATION|:ORIGIN]-(flight:Flight) RETURN flight.airline AS Airline,COUNT(DISTINCT airport) AS Counter ORDER BY Counter
+10. MATCH path = ((start :Airport)-[connection :CONNECTION*..2]->(destination :Airport))
+	WITH path, start, connection, destination
+	WHERE ALL(node1 IN NODES(path) WHERE size([node2 IN NODES(path) WHERE node2 = node1]) = 1)
+	WITH start, [node in NODES(path) | node.name] AS finalPath, LENGTH(path) as length, destination, REDUCE(finalPrice = 0, c IN connection | finalPrice + c.price) AS finalPrice
+	WHERE length = 2
+	RETURN start, finalPath, destination, finalPrice
+	ORDER BY finalPrice
+	LIMIT 1

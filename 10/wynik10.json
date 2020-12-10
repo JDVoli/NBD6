@@ -1,0 +1,28 @@
+﻿[
+  {
+    "start": {
+"identity": 21,
+"labels": [
+        "Airport"
+      ],
+"properties": {
+"name": "MSN"
+      }
+    },
+    "finalPath": [
+      "MSN",
+      "ORD",
+      "GRR"
+    ],
+    "destination": {
+"identity": 68,
+"labels": [
+        "Airport"
+      ],
+"properties": {
+"name": "GRR"
+      }
+    },
+    "finalPrice": 196.5
+  }
+]
